@@ -27,6 +27,12 @@
       }
     },
     {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1/chat/completions",
+      "api_key": "sk-xxx",
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3-mini"]
+    },
+    {
       "name": "ollama",
       "api_base_url": "http://localhost:11434/v1/chat/completions",
       "api_key": "ollama",
@@ -105,12 +111,12 @@
     }
   ],
   "Router": {
-    "default": "deepseek,deepseek-chat",
-    "background": "ollama,qwen2.5-coder:latest",
+    "default": "openai,gpt-4o",
+    "background": "openai,gpt-4o-mini",
     "think": "deepseek,deepseek-reasoner",
-    "longContext": "openrouter,google/gemini-2.5-pro-preview",
+    "longContext": "openai,gpt-4o",
     "longContextThreshold": 60000,
-    "webSearch": "gemini,gemini-2.5-flash"
+    "webSearch": "openrouter,google/gemini-2.0-flash-exp"
   },
   "APIKEY": "your-secret-key",
   "HOST": "0.0.0.0",
