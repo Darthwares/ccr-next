@@ -11,6 +11,38 @@ import { Config, Provider } from '../types';
 const CONFIG_DIR = process.env.CCR_CONFIG_DIR || join(homedir(), '.claude-code-router');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
+// Known provider transformer mappings
+const PROVIDER_TRANSFORMERS: Record<string, string> = {
+  gemini: 'gemini',
+  openrouter: 'openrouter',
+  deepseek: 'deepseek',
+  groq: 'groq',
+  'vertex-gemini': 'vertex-gemini',
+  anthropic: 'Anthropic',
+  // OpenAI and similar providers typically don't need transformers
+  openai: '',
+  azure: '',
+  local: '',
+};
+
+// Function to get transformer for a provider
+function getTransformerForProvider(providerName: string): string | undefined {
+  // Check exact match first
+  if (Object.prototype.hasOwnProperty.call(PROVIDER_TRANSFORMERS, providerName)) {
+    return PROVIDER_TRANSFORMERS[providerName] || undefined;
+  }
+
+  // Check if URL contains known provider keywords
+  const lowerName = providerName.toLowerCase();
+  for (const [key, transformer] of Object.entries(PROVIDER_TRANSFORMERS)) {
+    if (lowerName.includes(key)) {
+      return transformer || undefined;
+    }
+  }
+
+  return undefined;
+}
+
 export const theme = {
   primary: chalk.hex('#00E0FF'),
   success: chalk.green,
@@ -178,10 +210,17 @@ export async function addProvider(
       models,
     };
 
-    if (transformer) {
+    // Use provided transformer or auto-detect based on provider name/URL
+    const transformerToUse =
+      transformer || getTransformerForProvider(name) || getTransformerForProvider(apiBaseUrl);
+
+    if (transformerToUse) {
       provider.transformer = {
-        use: [transformer],
+        use: [transformerToUse],
       };
+      if (!transformer) {
+        console.log(theme.info(`\n📌 Auto-detected transformer: ${theme.bold(transformerToUse)}`));
+      }
     }
 
     if (existingIndex >= 0) {
@@ -234,6 +273,44 @@ export async function listProviders() {
 
 export function showSuccess(message: string) {
   console.log(theme.success(`\n✅ ${message}\n`));
+}
+
+export function showSupportedProviders() {
+  showBanner('Supported Providers', 'info');
+
+  const table = new Table({
+    head: [theme.bold('Provider'), theme.bold('Transformer'), theme.bold('Example URL')],
+    style: {
+      head: [],
+      border: [],
+    },
+  });
+
+  const examples: Record<string, string> = {
+    gemini: 'https://generativelanguage.googleapis.com/v1beta/models/',
+    openrouter: 'https://openrouter.ai/api/v1/chat/completions',
+    deepseek: 'https://api.deepseek.com/chat/completions',
+    groq: 'https://api.groq.com/openai/v1/chat/completions',
+    anthropic: 'https://api.anthropic.com/v1/messages',
+    openai: 'https://api.openai.com/v1/chat/completions',
+    azure: 'https://{resource}.openai.azure.com/openai/deployments/{deployment}/chat/completions',
+  };
+
+  Object.entries(PROVIDER_TRANSFORMERS).forEach(([provider, transformer]) => {
+    if (provider !== 'vertex-gemini' && provider !== 'local') {
+      table.push([
+        theme.primary(provider),
+        transformer ? theme.info(transformer) : theme.muted('none'),
+        theme.muted(examples[provider] || 'N/A'),
+      ]);
+    }
+  });
+
+  console.log('\n' + theme.bold.underline('Supported Providers:'));
+  console.log(table.toString());
+  console.log(
+    '\n' + theme.info('💡 Transformers are automatically detected when adding providers!')
+  );
 }
 
 export function showError(message: string) {
