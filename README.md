@@ -161,8 +161,8 @@ Create your configuration file at `~/.claude-code-router/config.json`. See `conf
 #### Quick Start
 
 ```shell
-# Add OpenAI as a provider (example)
-ccr provider add openai https://api.openai.com/v1/chat/completions YOUR-API-KEY gpt-4o,gpt-4o-mini
+# Add OpenAI as a provider (recommended: gpt-4o for best performance)
+ccr provider add openai https://api.openai.com/v1/chat/completions YOUR-API-KEY gpt-4o
 
 # Start Claude Code with the router
 ccr code
