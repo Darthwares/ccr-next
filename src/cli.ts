@@ -7,6 +7,7 @@ import { spawn } from 'child_process';
 import { PID_FILE, REFERENCE_COUNT_FILE } from './constants';
 import fs, { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { homedir } from 'os';
 import { logger } from './utils/logger';
 import { formatErrorMessage } from './utils/errorHandler';
 import { handleStopCommand, stopService } from './utils/serviceControl';
@@ -41,6 +42,7 @@ ${theme.bold('Commands:')}
   ${theme.primary('provider')}      Manage providers
                   add <name> <url> <key> <models>         Add/update provider
                   list                                     List all providers
+                  edit                                     Edit config file directly
   ${theme.primary('-v, version')}   Show version information
   ${theme.primary('-h, help')}      Show help information
 
@@ -49,6 +51,7 @@ ${theme.bold('Examples:')}
   ${theme.muted('ccr start --provider openrouter https://openrouter.ai/api/v1/chat/completions sk-xxx claude-3.5-sonnet,gemini-2.0-flash')}
   ${theme.muted('ccr start --transformer openrouter openrouter')}
   ${theme.muted('ccr provider add deepseek https://api.deepseek.com/chat/completions sk-xxx deepseek-chat')}
+  ${theme.muted('ccr provider add openrouter https://openrouter.ai/api/v1/chat/completions sk-xxx claude-3.5-sonnet --transformer openrouter')}
   ${theme.muted('ccr provider list')}
   ${theme.muted('ccr code "Write a Hello World"')}
 `;
@@ -278,9 +281,32 @@ async function main() {
         case 'list':
           await listProviders();
           break;
+        case 'edit': {
+          // Open the config file in the default editor
+          const editor = process.env.EDITOR || (process.platform === 'win32' ? 'notepad' : 'nano');
+          const configPath = join(homedir(), '.claude-code-router', 'config.json');
+
+          if (!existsSync(configPath)) {
+            showError('No configuration file found. Run "ccr start" first to create one.');
+            process.exit(1);
+          }
+
+          showInfo(`Opening config file in ${editor}...`);
+          const editorProcess = spawn(editor, [configPath], { stdio: 'inherit' });
+
+          editorProcess.on('exit', code => {
+            if (code === 0) {
+              showSuccess('Configuration file saved.');
+              showInfo('Restart the service for changes to take effect: ccr restart');
+            } else {
+              showError('Editor exited with an error.');
+            }
+          });
+          break;
+        }
         default:
           showError(`Unknown provider subcommand: ${subCommand}`);
-          console.log(theme.muted('\nAvailable subcommands: add, list'));
+          console.log(theme.muted('\nAvailable subcommands: add, list, edit'));
           process.exit(1);
       }
       break;
