@@ -1,11 +1,11 @@
 import { run } from './index';
 import { showStatus } from './utils/status';
 import { executeCodeCommand } from './utils/codeCommand';
-import { cleanupPidFile, isServiceRunning } from './utils/processCheck';
+import { isServiceRunning } from './utils/processCheck';
 import { version } from '../package.json';
 import { spawn } from 'child_process';
-import { PID_FILE, REFERENCE_COUNT_FILE } from './constants';
-import fs, { existsSync, readFileSync } from 'fs';
+import { PID_FILE } from './constants';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { logger } from './utils/logger';
@@ -16,6 +16,7 @@ import {
   createSpinner,
   addProvider,
   listProviders,
+  showSupportedProviders,
   showSuccess,
   showError,
   showInfo,
@@ -43,6 +44,7 @@ ${theme.bold('Commands:')}
                   add <name> <url> <key> <models>         Add/update provider
                   list                                     List all providers
                   edit                                     Edit config file directly
+                  supported                                Show supported providers
   ${theme.primary('-v, version')}   Show version information
   ${theme.primary('-h, help')}      Show help information
 
@@ -304,9 +306,12 @@ async function main() {
           });
           break;
         }
+        case 'supported':
+          showSupportedProviders();
+          break;
         default:
           showError(`Unknown provider subcommand: ${subCommand}`);
-          console.log(theme.muted('\nAvailable subcommands: add, list, edit'));
+          console.log(theme.muted('\nAvailable subcommands: add, list, edit, supported'));
           process.exit(1);
       }
       break;
