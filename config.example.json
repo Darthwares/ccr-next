@@ -27,6 +27,12 @@
       }
     },
     {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1/chat/completions",
+      "api_key": "sk-xxx",
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3-mini"]
+    },
+    {
       "name": "ollama",
       "api_base_url": "http://localhost:11434/v1/chat/completions",
       "api_key": "ollama",
