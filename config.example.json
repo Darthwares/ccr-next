@@ -30,7 +30,7 @@
       "name": "openai",
       "api_base_url": "https://api.openai.com/v1/chat/completions",
       "api_key": "sk-xxx",
-      "models": ["gpt-4o", "gpt-4o-mini", "o1", "o1-mini"]
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3-mini"]
     },
     {
       "name": "azure-openai",
@@ -117,10 +117,10 @@
     }
   ],
   "Router": {
-    "default": "openai,gpt-4o",
-    "background": "openai,gpt-4o-mini",
+    "default": "openai,gpt-4.1",
+    "background": "openai,gpt-4.1-mini",
     "think": "deepseek,deepseek-reasoner",
-    "longContext": "openai,gpt-4o",
+    "longContext": "openai,gpt-4.1",
     "longContextThreshold": 60000,
     "webSearch": "openrouter,google/gemini-2.0-flash-exp"
   },

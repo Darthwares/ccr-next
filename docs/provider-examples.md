@@ -15,23 +15,24 @@ This document provides detailed examples for configuring various LLM providers w
 
 OpenAI is natively supported without requiring any transformer, as the @musistudio/llms package uses OpenAI's API format as its base standard.
 
-### Recommended Model: GPT-4o
+### Recommended Model: GPT-4.1
 
-For Claude Code usage, **GPT-4o** is the recommended OpenAI model based on:
-- **Superior code generation quality** for complex, multi-file projects
-- **Advanced function calling and tool orchestration** capabilities
-- **Large context window** (128K tokens) for understanding entire codebases
-- **Best performance** for multi-step reasoning and project-wide refactoring
+For Claude Code usage, **GPT-4.1** is the recommended OpenAI model based on:
+- **Latest generation model** with enhanced capabilities over GPT-4o
+- **Massive context window** (1,047,576 tokens - over 1 million tokens!)
+- **Superior multimodal capabilities** for text and image input
+- **Optimized for versatility** and non-reasoning tasks
+- **Best overall performance** for complex software development
 
-While gpt-4o-mini and o1-mini are more cost-efficient for simple tasks, GPT-4o provides the best overall performance for serious software development work with Claude Code.
+GPT-4.1 mini offers near-identical output at lower cost, while GPT-4.1 nano provides even faster, more cost-effective performance for basic tasks.
 
 ### Command Line
 ```bash
-# Recommended setup with GPT-4o as primary model
-ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4o,gpt-4o-mini,o1,o1-mini
+# Recommended setup with GPT-4.1 as primary model
+ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4.1,gpt-4.1-mini,gpt-4.1-nano
 
-# Or if you only want to use GPT-4o
-ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4o
+# Or if you only want to use GPT-4.1
+ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4.1
 ```
 
 ### Configuration
@@ -40,7 +41,7 @@ ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-
   "name": "openai",
   "api_base_url": "https://api.openai.com/v1/chat/completions",
   "api_key": "sk-xxxxx",
-  "models": ["gpt-4o", "gpt-4o-mini", "o1", "o1-mini"]
+  "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "o3-mini"]
   // No transformer needed - OpenAI format is the default
 }
 ```
@@ -53,7 +54,7 @@ If you want to optimize Claude Code's verbose system prompts for better performa
   "name": "openai",
   "api_base_url": "https://api.openai.com/v1/chat/completions",
   "api_key": "sk-xxxxx",
-  "models": ["gpt-4o", "gpt-4o-mini", "o1", "o1-mini"],
+  "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "o3-mini"],
   "transformer": {
     "use": ["./plugins/openai.js"]
   }
@@ -205,17 +206,17 @@ After adding providers, configure routing for different scenarios:
 
 ```json
 "Router": {
-  // Default route for general requests - GPT-4o recommended for best performance
-  "default": "openai,gpt-4o",
+  // Default route for general requests - GPT-4.1 recommended for best performance
+  "default": "openai,gpt-4.1",
   
   // Background tasks (e.g., auto-completions) - use cheaper models
-  "background": "openai,gpt-4o-mini",
+  "background": "openai,gpt-4.1-mini",
   
-  // Thinking/reasoning tasks
-  "think": "deepseek,deepseek-reasoner",
+  // Thinking/reasoning tasks - use o3-mini for advanced reasoning
+  "think": "openai,o3-mini",
   
-  // Long context requests - GPT-4o handles up to 128K tokens
-  "longContext": "openai,gpt-4o",
+  // Long context requests - GPT-4.1 handles over 1M tokens!
+  "longContext": "openai,gpt-4.1",
   "longContextThreshold": 60000,
   
   // Web search enabled requests
@@ -229,20 +230,20 @@ For better cost efficiency while maintaining quality:
 
 ```json
 "Router": {
-  // Use GPT-4o for complex tasks
-  "default": "openai,gpt-4o",
+  // Use GPT-4.1 for complex tasks
+  "default": "openai,gpt-4.1",
   
-  // Use mini models for simple/background tasks
-  "background": "openai,gpt-4o-mini",
+  // Use nano model for simple/background tasks (most cost-effective)
+  "background": "openai,gpt-4.1-nano",
   
   // Alternative: Use local models for background
-  "background": "ollama,qwen2.5-coder:latest",
+  // "background": "ollama,qwen2.5-coder:latest",
   
-  // Use specialized models for reasoning
-  "think": "deepseek,deepseek-reasoner",
+  // Use o3-mini for specialized reasoning tasks
+  "think": "openai,o3-mini",
   
-  // Long context with GPT-4o (excellent 128K context handling)
-  "longContext": "openai,gpt-4o",
+  // Long context with GPT-4.1 (handles 1M+ tokens!)
+  "longContext": "openai,gpt-4.1",
   "longContextThreshold": 60000
 }
 ```
