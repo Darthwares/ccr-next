@@ -29,8 +29,9 @@ const HELP_TEXT = `
 ${theme.bold('Usage:')} ccr [command] [options]
 
 ${theme.bold('Commands:')}
-  ${theme.primary('start')}         Start server 
+  ${theme.primary('start')}         Start server (runs in background by default)
                 Options:
+                  --foreground                             Run in foreground mode
                   --provider <name> <url> <key> <models>  Add/update provider
                   --transformer <provider> <transformer>   Set transformer for provider
   ${theme.primary('stop')}          Stop server
@@ -102,16 +103,56 @@ async function main() {
   checkForUpdates().catch(() => {});
 
   switch (command) {
-    case 'start':
-      try {
-        const startOptions = parseStartOptions(process.argv.slice(3));
-        showBanner('Starting Claude Code Router...', 'info');
-        await run(startOptions);
-      } catch (error: any) {
-        showError(`Failed to start service: ${formatErrorMessage(error)}`);
-        process.exit(1);
+    case 'start': {
+      if (isServiceRunning()) {
+        showSuccess('Service is already running!');
+        await showStatus();
+        process.exit(0);
+      }
+
+      // Check if --foreground flag is present
+      const foreground = process.argv.includes('--foreground');
+
+      if (foreground) {
+        // Run in foreground mode
+        try {
+          const startOptions = parseStartOptions(process.argv.slice(3));
+          showBanner('Starting Claude Code Router...', 'info');
+          await run(startOptions);
+        } catch (error: any) {
+          showError(`Failed to start service: ${formatErrorMessage(error)}`);
+          process.exit(1);
+        }
+      } else {
+        // Run in background mode (default)
+        const startOptions = process.argv.slice(3).filter(arg => arg !== '--foreground');
+        const cliPath = join(__dirname, 'cli.js');
+        const startProcess = spawn('node', [cliPath, 'start', '--foreground', ...startOptions], {
+          detached: true,
+          stdio: 'ignore',
+        });
+
+        startProcess.on('error', error => {
+          showError(`Failed to start service: ${formatErrorMessage(error)}`);
+          process.exit(1);
+        });
+
+        startProcess.unref();
+
+        const spinner = createSpinner('Starting service in background...');
+        spinner.start();
+
+        if (await waitForService()) {
+          spinner.succeed(theme.success('Service started successfully!'));
+          await showStatus();
+        } else {
+          spinner.fail(theme.error('Service failed to start'));
+          showError('Check the logs for more details');
+          process.exit(1);
+        }
       }
       break;
+    }
     case 'stop':
       await handleStopCommand();
       break;
