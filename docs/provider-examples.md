@@ -15,9 +15,23 @@ This document provides detailed examples for configuring various LLM providers w
 
 OpenAI is natively supported without requiring any transformer, as the @musistudio/llms package uses OpenAI's API format as its base standard.
 
+### Recommended Model: GPT-4o
+
+For Claude Code usage, **GPT-4o** is the recommended OpenAI model based on:
+- **Superior code generation quality** for complex, multi-file projects
+- **Advanced function calling and tool orchestration** capabilities
+- **Large context window** (128K tokens) for understanding entire codebases
+- **Best performance** for multi-step reasoning and project-wide refactoring
+
+While gpt-4o-mini and o1-mini are more cost-efficient for simple tasks, GPT-4o provides the best overall performance for serious software development work with Claude Code.
+
 ### Command Line
 ```bash
+# Recommended setup with GPT-4o as primary model
 ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4o,gpt-4o-mini,o1,o1-mini
+
+# Or if you only want to use GPT-4o
+ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4o
 ```
 
 ### Configuration
@@ -191,21 +205,45 @@ After adding providers, configure routing for different scenarios:
 
 ```json
 "Router": {
-  // Default route for general requests
+  // Default route for general requests - GPT-4o recommended for best performance
   "default": "openai,gpt-4o",
   
-  // Background tasks (e.g., auto-completions)
-  "background": "deepseek,deepseek-chat",
+  // Background tasks (e.g., auto-completions) - use cheaper models
+  "background": "openai,gpt-4o-mini",
   
   // Thinking/reasoning tasks
   "think": "deepseek,deepseek-reasoner",
   
-  // Long context requests
-  "longContext": "gemini,gemini-1.5-pro",
+  // Long context requests - GPT-4o handles up to 128K tokens
+  "longContext": "openai,gpt-4o",
   "longContextThreshold": 60000,
   
   // Web search enabled requests
   "webSearch": "openrouter,google/gemini-2.0-flash-exp"
+}
+```
+
+### Cost-Optimized Configuration
+
+For better cost efficiency while maintaining quality:
+
+```json
+"Router": {
+  // Use GPT-4o for complex tasks
+  "default": "openai,gpt-4o",
+  
+  // Use mini models for simple/background tasks
+  "background": "openai,gpt-4o-mini",
+  
+  // Alternative: Use local models for background
+  "background": "ollama,qwen2.5-coder:latest",
+  
+  // Use specialized models for reasoning
+  "think": "deepseek,deepseek-reasoner",
+  
+  // Long context with GPT-4o (excellent 128K context handling)
+  "longContext": "openai,gpt-4o",
+  "longContextThreshold": 60000
 }
 ```
 
