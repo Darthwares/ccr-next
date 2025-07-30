@@ -1,0 +1,92 @@
+// This config file supports JSON5 format (comments, trailing commas, etc.)
+// This example shows various provider configurations with transformers
+{
+  // Enable logging (optional)
+  LOG: true,
+  LOG_LEVEL: "info", // Options: error, warn, info, debug
+  
+  // API key for authentication (optional, but recommended for security)
+  APIKEY: "",
+  
+  // Server configuration
+  HOST: "127.0.0.1", // Use 0.0.0.0 to allow external connections (requires APIKEY)
+  PORT: 3456,
+  API_TIMEOUT_MS: 600000, // 10 minutes
+  
+  // Provider configurations
+  Providers: [
+    {
+      name: "openrouter",
+      api_base_url: "https://openrouter.ai/api/v1/chat/completions",
+      api_key: "sk-or-v1-xxxxx", // Replace with your OpenRouter API key
+      models: [
+        "anthropic/claude-3.5-sonnet",
+        "google/gemini-2.0-flash-exp",
+        "meta-llama/llama-3.1-405b-instruct",
+      ],
+      // OpenRouter requires a specific transformer
+      transformer: {
+        use: ["openrouter"],
+      },
+    },
+    {
+      name: "deepseek",
+      api_base_url: "https://api.deepseek.com/chat/completions",
+      api_key: "sk-xxxxx", // Replace with your DeepSeek API key
+      models: ["deepseek-chat", "deepseek-reasoner"],
+      // DeepSeek works with the deepseek transformer
+      transformer: {
+        use: ["deepseek"],
+      },
+    },
+    {
+      name: "gemini",
+      api_base_url: "https://generativelanguage.googleapis.com/v1beta/models/",
+      api_key: "AIzaSyXXXXX", // Replace with your Gemini API key
+      models: ["gemini-2.0-flash", "gemini-2.0-flash-thinking"],
+      // Gemini uses its own transformer
+      transformer: {
+        use: ["gemini"],
+      },
+    },
+    {
+      name: "groq",
+      api_base_url: "https://api.groq.com/openai/v1/chat/completions",
+      api_key: "gsk_xxxxx", // Replace with your Groq API key
+      models: ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"],
+      // Groq transformer for optimized performance
+      transformer: {
+        use: ["groq"],
+      },
+    },
+    {
+      name: "openai",
+      api_base_url: "https://api.openai.com/v1/chat/completions",
+      api_key: "sk-xxxxx", // Replace with your OpenAI API key
+      models: ["gpt-4o", "gpt-4o-mini"],
+      // OpenAI doesn't require a special transformer
+    },
+  ],
+  
+  // Router configuration - defines which provider/model to use for different scenarios
+  Router: {
+    // Default route for general requests
+    default: "openrouter,anthropic/claude-3.5-sonnet",
+    
+    // Background tasks (e.g., auto-completions)
+    background: "deepseek,deepseek-chat",
+    
+    // Thinking/reasoning tasks
+    think: "deepseek,deepseek-reasoner",
+    
+    // Long context requests (when context exceeds threshold)
+    longContext: "gemini,gemini-2.0-flash",
+    longContextThreshold: 60000, // tokens
+    
+    // Web search enabled requests
+    webSearch: "openrouter,google/gemini-2.0-flash-exp",
+  },
+  
+  // Custom router script (optional)
+  // CUSTOM_ROUTER_PATH: "./custom-router.js",
+}

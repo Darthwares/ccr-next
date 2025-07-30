@@ -192,7 +192,9 @@ export async function addProvider(
       spinner.succeed(theme.success(`✅ Added new provider: ${theme.bold(name)}`));
     }
 
-    writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+    // Write as JSON5 to support comments
+    const configContent = JSON5.stringify(config, null, 2);
+    writeFileSync(CONFIG_FILE, configContent);
 
     console.log('\n' + theme.info('Provider configuration:'));
     console.log(formatProvider(provider));

@@ -1,0 +1,97 @@
+name: Auto Release on Merge
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  check-and-publish:
+    # Only run on merged PRs or direct pushes to main
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      
+      - name: Check if version changed
+        id: version-check
+        run: |
+          # Get the current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Check if this version is already published
+          if npm view ccr-next@$CURRENT_VERSION version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION is already published"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version $CURRENT_VERSION is not published yet"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install dependencies
+        if: steps.version-check.outputs.should_publish == 'true'
+        run: npm ci
+      
+      - name: Run tests
+        if: steps.version-check.outputs.should_publish == 'true'
+        run: npm test
+      
+      - name: Build
+        if: steps.version-check.outputs.should_publish == 'true'
+        run: npm run build
+      
+      - name: Publish to npm
+        if: steps.version-check.outputs.should_publish == 'true'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.should_publish == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version-check.outputs.current_version }}
+          release_name: Release v${{ steps.version-check.outputs.current_version }}
+          body: |
+            ## 🚀 Auto-released version ${{ steps.version-check.outputs.current_version }}
+            
+            This release was automatically published when changes were merged to main.
+            
+            ### Installation
+            ```bash
+            npm install -g ccr-next@${{ steps.version-check.outputs.current_version }}
+            ```
+            
+            See the [commit history](https://github.com/${{ github.repository }}/commits/v${{ steps.version-check.outputs.current_version }}) for changes.
+          draft: false
+          prerelease: false
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.version-check.outputs.should_publish == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🎉 Released!\n\nVersion \`${{ steps.version-check.outputs.current_version }}\` has been successfully published to npm.\n\nInstall with:\n\`\`\`bash\nnpm install -g ccr-next@${{ steps.version-check.outputs.current_version }}\n\`\`\``
+            })
