@@ -183,6 +183,47 @@ ccr stop
 | `ccr restart` | Restart the router server |
 | `ccr status` | Check server status |
 | `ccr code [prompt]` | Run Claude Code through the router |
+| `ccr provider add` | Add a new provider |
+| `ccr provider list` | List configured providers |
+| `ccr provider edit` | Edit provider configuration |
+| `ccr provider supported` | Show supported providers |
+
+#### Provider Examples
+
+Here are examples for popular providers:
+
+##### OpenAI
+```bash
+ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4o,gpt-4o-mini,o1,o1-mini
+```
+
+##### Azure OpenAI
+```bash
+# Replace YOUR-RESOURCE and YOUR-DEPLOYMENT with your actual values
+ccr provider add azure-openai "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT/chat/completions?api-version=2024-08-01-preview" "your-api-key" "gpt-4o"
+```
+
+For Azure OpenAI:
+- Replace `YOUR-RESOURCE` with your Azure OpenAI resource name
+- Replace `YOUR-DEPLOYMENT` with your deployment name
+- Find your API key in Azure Portal under "Keys and Endpoint"
+
+##### Google Gemini
+```bash
+ccr provider add gemini https://generativelanguage.googleapis.com/v1beta/models/ your-api-key gemini-2.0-flash,gemini-1.5-pro
+```
+
+##### Anthropic
+```bash
+ccr provider add anthropic https://api.anthropic.com/v1/messages your-api-key claude-3-5-sonnet-latest,claude-3-5-haiku-latest
+```
+
+##### DeepSeek
+```bash
+ccr provider add deepseek https://api.deepseek.com/chat/completions your-api-key deepseek-chat,deepseek-reasoner
+```
+
+See [Provider Examples Documentation](docs/provider-examples.md) for more detailed configurations.
 
 #### Providers
 
