@@ -19,7 +19,7 @@ OpenAI is natively supported without requiring any transformer, as the @musistud
 
 For Claude Code usage, **GPT-4.1** is the recommended OpenAI model based on:
 - **Latest generation model** with enhanced capabilities over GPT-4o
-- **Massive context window** (1,047,576 tokens - over 1 million tokens!)
+- **Massive context window** (up to 1 million tokens)
 - **Superior multimodal capabilities** for text and image input
 - **Optimized for versatility** and non-reasoning tasks
 - **Best overall performance** for complex software development
@@ -36,7 +36,7 @@ ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "openai",
   "api_base_url": "https://api.openai.com/v1/chat/completions",
@@ -47,17 +47,27 @@ ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-
 ```
 
 ### Optional: Using the OpenAI Optimization Transformer
-If you want to optimize Claude Code's verbose system prompts for better performance with OpenAI models, you can use the included optimization transformer:
+If you want to optimize Claude Code's verbose system prompts for better performance with OpenAI models, you can use the included optimization transformer.
 
-```json
+First, register the transformer in your config:
+```jsonc
 {
-  "name": "openai",
-  "api_base_url": "https://api.openai.com/v1/chat/completions",
-  "api_key": "sk-xxxxx",
-  "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "o3-mini"],
-  "transformer": {
-    "use": ["./plugins/openai.js"]
-  }
+  "transformers": [
+    {
+      "path": "$HOME/.claude-code-router/plugins/openai.js"
+    }
+  ],
+  "Providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1/chat/completions",
+      "api_key": "sk-xxxxx",
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "o3-mini"],
+      "transformer": {
+        "use": ["openai"]  // Reference by name after registering
+      }
+    }
+  ]
 }
 ```
 
@@ -78,7 +88,7 @@ ccr provider add azure-openai "https://YOUR-RESOURCE.openai.azure.com/openai/dep
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "azure-openai",
   "api_base_url": "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT/chat/completions?api-version=2024-08-01-preview",
@@ -103,7 +113,7 @@ ccr provider add anthropic https://api.anthropic.com/v1/messages your-api-key cl
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "anthropic",
   "api_base_url": "https://api.anthropic.com/v1/messages",
@@ -123,7 +133,7 @@ ccr provider add gemini https://generativelanguage.googleapis.com/v1beta/models/
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "gemini",
   "api_base_url": "https://generativelanguage.googleapis.com/v1beta/models/",
@@ -143,7 +153,7 @@ ccr provider add deepseek https://api.deepseek.com/chat/completions your-api-key
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "deepseek",
   "api_base_url": "https://api.deepseek.com/chat/completions",
@@ -163,7 +173,7 @@ ccr provider add groq https://api.groq.com/openai/v1/chat/completions your-api-k
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "groq",
   "api_base_url": "https://api.groq.com/openai/v1/chat/completions",
@@ -183,14 +193,14 @@ ccr provider add openrouter https://openrouter.ai/api/v1/chat/completions your-a
 ```
 
 ### Configuration
-```json
+```jsonc
 {
   "name": "openrouter",
   "api_base_url": "https://openrouter.ai/api/v1/chat/completions",
   "api_key": "sk-or-v1-xxxxx",
   "models": [
     "anthropic/claude-3.5-sonnet",
-    "google/gemini-2.0-flash-exp",
+    "google/gemini-2.0-flash-exp:online",  // Add :online for web search support
     "openai/gpt-4o",
     "meta-llama/llama-3.1-405b-instruct"
   ],
@@ -204,7 +214,7 @@ ccr provider add openrouter https://openrouter.ai/api/v1/chat/completions your-a
 
 After adding providers, configure routing for different scenarios:
 
-```json
+```jsonc
 "Router": {
   // Default route for general requests - GPT-4.1 recommended for best performance
   "default": "openai,gpt-4.1",
@@ -215,12 +225,12 @@ After adding providers, configure routing for different scenarios:
   // Thinking/reasoning tasks - use o3-mini for advanced reasoning
   "think": "openai,o3-mini",
   
-  // Long context requests - GPT-4.1 handles over 1M tokens!
+  // Long context requests - GPT-4.1 handles up to 1M tokens
   "longContext": "openai,gpt-4.1",
   "longContextThreshold": 60000,
   
-  // Web search enabled requests
-  "webSearch": "openrouter,google/gemini-2.0-flash-exp"
+  // Web search enabled requests - add :online suffix for OpenRouter
+  "webSearch": "openrouter,google/gemini-2.0-flash-exp:online"
 }
 ```
 
@@ -228,7 +238,7 @@ After adding providers, configure routing for different scenarios:
 
 For better cost efficiency while maintaining quality:
 
-```json
+```jsonc
 "Router": {
   // Use GPT-4.1 for complex tasks
   "default": "openai,gpt-4.1",
@@ -242,7 +252,7 @@ For better cost efficiency while maintaining quality:
   // Use o3-mini for specialized reasoning tasks
   "think": "openai,o3-mini",
   
-  // Long context with GPT-4.1 (handles 1M+ tokens!)
+  // Long context with GPT-4.1 (handles up to 1M tokens)
   "longContext": "openai,gpt-4.1",
   "longContextThreshold": 60000
 }

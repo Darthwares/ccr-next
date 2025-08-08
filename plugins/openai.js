@@ -7,11 +7,11 @@
  * 3. Restructuring tool descriptions for better comprehension
  */
 
-module.exports = function (options = {}) {
+module.exports = function () {
   return {
     name: 'openai',
     requestInterceptor: async (server) => {
-      server.addHook('preHandler', async (request, reply) => {
+      server.addHook('preHandler', async (request) => {
         if (request.body && request.body.messages) {
           const messages = request.body.messages;
           

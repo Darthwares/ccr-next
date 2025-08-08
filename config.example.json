@@ -119,10 +119,10 @@
   "Router": {
     "default": "openai,gpt-4.1",
     "background": "openai,gpt-4.1-mini",
-    "think": "deepseek,deepseek-reasoner",
+    "think": "openai,o3-mini",
     "longContext": "openai,gpt-4.1",
     "longContextThreshold": 60000,
-    "webSearch": "openrouter,google/gemini-2.0-flash-exp"
+    "webSearch": "openrouter,google/gemini-2.0-flash-exp:online"
   },
   "APIKEY": "your-secret-key",
   "HOST": "0.0.0.0",
