@@ -28,7 +28,7 @@ npm install -g @anthropic-ai/claude-code
 Then, install Claude Code Router:
 
 ```shell
-npm install -g @musistudio/claude-code-router
+npm install -g ccr-next
 ```
 
 ### 2. Configuration
