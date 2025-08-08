@@ -7,7 +7,7 @@
 ## ✨ Key Features
 
 - **🔀 Intelligent Model Routing**: Automatically route requests to different models based on task type (background tasks, reasoning, long context, web search)
-- **🌐 Universal Provider Support**: Works with OpenRouter, DeepSeek, Ollama, Gemini, Volcengine, Alibaba Cloud, and any OpenAI-compatible API
+- **🌐 Universal Provider Support**: Works with OpenAI, Azure OpenAI, OpenRouter, DeepSeek, Ollama, Gemini, Volcengine, Alibaba Cloud, and any OpenAI-compatible API
 - **🔧 Request/Response Transformation**: Built-in transformers adapt requests for different provider APIs automatically
 - **💱 Dynamic Model Switching**: Switch models on-the-fly using `/model provider,model` command in Claude Code
 - **🤖 GitHub Actions Integration**: Run Claude Code in CI/CD pipelines with custom models
@@ -28,7 +28,7 @@ npm install -g @anthropic-ai/claude-code
 Then, install Claude Code Router:
 
 ```shell
-npm install -g @musistudio/claude-code-router
+npm install -g ccr-next
 ```
 
 ### 2. Configuration
@@ -161,6 +161,9 @@ Create your configuration file at `~/.claude-code-router/config.json`. See `conf
 #### Quick Start
 
 ```shell
+# Add OpenAI as a provider (recommended: gpt-4.1 for best performance)
+ccr provider add openai https://api.openai.com/v1/chat/completions YOUR-API-KEY gpt-4.1
+
 # Start Claude Code with the router
 ccr code
 
@@ -301,6 +304,8 @@ Transformers allow you to modify the request and response payloads to ensure com
 | `enhancetool` | Enhanced tool handling | Advanced tool usage |
 | `reasoning` | Optimizes for reasoning | Thinking/reasoning models |
 | `gemini-cli` | Unofficial Gemini support | Experimental |
+
+**Note:** OpenAI and Azure OpenAI providers don't require transformers as they use the standard OpenAI API format, which is the default format used by the router.
 
 **Custom Transformers:**
 

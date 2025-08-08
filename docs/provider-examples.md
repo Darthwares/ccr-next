@@ -13,21 +13,68 @@ This document provides detailed examples for configuring various LLM providers w
 
 ## OpenAI
 
+OpenAI is natively supported without requiring any transformer, as the @musistudio/llms package uses OpenAI's API format as its base standard.
+
+### Recommended Model: GPT-4.1
+
+For Claude Code usage, **GPT-4.1** is the recommended OpenAI model based on:
+- **Latest generation model** with enhanced capabilities over GPT-4o
+- **Massive context window** (up to 1 million tokens)
+- **Superior multimodal capabilities** for text and image input
+- **Optimized for versatility** and non-reasoning tasks
+- **Best overall performance** for complex software development
+
+GPT-4.1 mini offers near-identical output at lower cost, while GPT-4.1 nano provides even faster, more cost-effective performance for basic tasks.
+
 ### Command Line
 ```bash
-ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4o,gpt-4o-mini,o1,o1-mini
+# Recommended setup with GPT-4.1 as primary model
+ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4.1,gpt-4.1-mini,gpt-4.1-nano
+
+# Or if you only want to use GPT-4.1
+ccr provider add openai https://api.openai.com/v1/chat/completions sk-xxxxx gpt-4.1
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "openai",
-  api_base_url: "https://api.openai.com/v1/chat/completions",
-  api_key: "sk-xxxxx",
-  models: ["gpt-4o", "gpt-4o-mini", "o1", "o1-mini"],
-  // No transformer needed
+  "name": "openai",
+  "api_base_url": "https://api.openai.com/v1/chat/completions",
+  "api_key": "sk-xxxxx",
+  "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "o3-mini"]
+  // No transformer needed - OpenAI format is the default
 }
 ```
+
+### Optional: Using the OpenAI Optimization Transformer
+If you want to optimize Claude Code's verbose system prompts for better performance with OpenAI models, you can use the included optimization transformer.
+
+First, register the transformer in your config:
+```jsonc
+{
+  "transformers": [
+    {
+      "path": "$HOME/.claude-code-router/plugins/openai.js"
+    }
+  ],
+  "Providers": [
+    {
+      "name": "openai",
+      "api_base_url": "https://api.openai.com/v1/chat/completions",
+      "api_key": "sk-xxxxx",
+      "models": ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "o3-mini"],
+      "transformer": {
+        "use": ["openai"]  // Reference by name after registering
+      }
+    }
+  ]
+}
+```
+
+This transformer:
+- Condenses Claude Code's system prompt to be more OpenAI-friendly
+- Sets appropriate defaults: `max_tokens: 4096`, `temperature: 0.7`
+- Removes Claude-specific instructions for cleaner prompts
 
 ## Azure OpenAI
 
@@ -41,12 +88,12 @@ ccr provider add azure-openai "https://YOUR-RESOURCE.openai.azure.com/openai/dep
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "azure-openai",
-  api_base_url: "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT/chat/completions?api-version=2024-08-01-preview",
-  api_key: "xxxxx",
-  models: ["gpt-4o"], // Should match your deployment name
+  "name": "azure-openai",
+  "api_base_url": "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT/chat/completions?api-version=2024-08-01-preview",
+  "api_key": "xxxxx",
+  "models": ["gpt-4o"], // Should match your deployment name
   // No transformer needed
 }
 ```
@@ -66,14 +113,14 @@ ccr provider add anthropic https://api.anthropic.com/v1/messages your-api-key cl
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "anthropic",
-  api_base_url: "https://api.anthropic.com/v1/messages",
-  api_key: "sk-ant-xxxxx",
-  models: ["claude-3-5-sonnet-latest", "claude-3-5-haiku-latest", "claude-3-opus-latest"],
-  transformer: {
-    use: ["Anthropic"]
+  "name": "anthropic",
+  "api_base_url": "https://api.anthropic.com/v1/messages",
+  "api_key": "sk-ant-xxxxx",
+  "models": ["claude-3-5-sonnet-latest", "claude-3-5-haiku-latest", "claude-3-opus-latest"],
+  "transformer": {
+    "use": ["Anthropic"]
   }
 }
 ```
@@ -86,14 +133,14 @@ ccr provider add gemini https://generativelanguage.googleapis.com/v1beta/models/
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "gemini",
-  api_base_url: "https://generativelanguage.googleapis.com/v1beta/models/",
-  api_key: "AIzaSyXXXXX",
-  models: ["gemini-2.0-flash", "gemini-2.0-flash-thinking", "gemini-1.5-pro"],
-  transformer: {
-    use: ["gemini"]
+  "name": "gemini",
+  "api_base_url": "https://generativelanguage.googleapis.com/v1beta/models/",
+  "api_key": "AIzaSyXXXXX",
+  "models": ["gemini-2.0-flash", "gemini-2.0-flash-thinking", "gemini-1.5-pro"],
+  "transformer": {
+    "use": ["gemini"]
   }
 }
 ```
@@ -106,14 +153,14 @@ ccr provider add deepseek https://api.deepseek.com/chat/completions your-api-key
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "deepseek",
-  api_base_url: "https://api.deepseek.com/chat/completions",
-  api_key: "sk-xxxxx",
-  models: ["deepseek-chat", "deepseek-reasoner"],
-  transformer: {
-    use: ["deepseek"]
+  "name": "deepseek",
+  "api_base_url": "https://api.deepseek.com/chat/completions",
+  "api_key": "sk-xxxxx",
+  "models": ["deepseek-chat", "deepseek-reasoner"],
+  "transformer": {
+    "use": ["deepseek"]
   }
 }
 ```
@@ -126,14 +173,14 @@ ccr provider add groq https://api.groq.com/openai/v1/chat/completions your-api-k
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "groq",
-  api_base_url: "https://api.groq.com/openai/v1/chat/completions",
-  api_key: "gsk_xxxxx",
-  models: ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.1-8b-instant"],
-  transformer: {
-    use: ["groq"]
+  "name": "groq",
+  "api_base_url": "https://api.groq.com/openai/v1/chat/completions",
+  "api_key": "gsk_xxxxx",
+  "models": ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama-3.1-8b-instant"],
+  "transformer": {
+    "use": ["groq"]
   }
 }
 ```
@@ -146,19 +193,19 @@ ccr provider add openrouter https://openrouter.ai/api/v1/chat/completions your-a
 ```
 
 ### Configuration
-```json
+```jsonc
 {
-  name: "openrouter",
-  api_base_url: "https://openrouter.ai/api/v1/chat/completions",
-  api_key: "sk-or-v1-xxxxx",
-  models: [
+  "name": "openrouter",
+  "api_base_url": "https://openrouter.ai/api/v1/chat/completions",
+  "api_key": "sk-or-v1-xxxxx",
+  "models": [
     "anthropic/claude-3.5-sonnet",
-    "google/gemini-2.0-flash-exp",
+    "google/gemini-2.0-flash-exp:online",  // Add :online for web search support
     "openai/gpt-4o",
     "meta-llama/llama-3.1-405b-instruct"
   ],
-  transformer: {
-    use: ["openrouter"]
+  "transformer": {
+    "use": ["openrouter"]
   }
 }
 ```
@@ -167,23 +214,47 @@ ccr provider add openrouter https://openrouter.ai/api/v1/chat/completions your-a
 
 After adding providers, configure routing for different scenarios:
 
-```json
-Router: {
-  // Default route for general requests
-  default: "openai,gpt-4o",
+```jsonc
+"Router": {
+  // Default route for general requests - GPT-4.1 recommended for best performance
+  "default": "openai,gpt-4.1",
   
-  // Background tasks (e.g., auto-completions)
-  background: "deepseek,deepseek-chat",
+  // Background tasks (e.g., auto-completions) - use cheaper models
+  "background": "openai,gpt-4.1-mini",
   
-  // Thinking/reasoning tasks
-  think: "deepseek,deepseek-reasoner",
+  // Thinking/reasoning tasks - use o3-mini for advanced reasoning
+  "think": "openai,o3-mini",
   
-  // Long context requests
-  longContext: "gemini,gemini-1.5-pro",
-  longContextThreshold: 60000,
+  // Long context requests - GPT-4.1 handles up to 1M tokens
+  "longContext": "openai,gpt-4.1",
+  "longContextThreshold": 60000,
   
-  // Web search enabled requests
-  webSearch: "openrouter,google/gemini-2.0-flash-exp",
+  // Web search enabled requests - add :online suffix for OpenRouter
+  "webSearch": "openrouter,google/gemini-2.0-flash-exp:online"
+}
+```
+
+### Cost-Optimized Configuration
+
+For better cost efficiency while maintaining quality:
+
+```jsonc
+"Router": {
+  // Use GPT-4.1 for complex tasks
+  "default": "openai,gpt-4.1",
+  
+  // Use nano model for simple/background tasks (most cost-effective)
+  "background": "openai,gpt-4.1-nano",
+  
+  // Alternative: Use local models for background
+  // "background": "ollama,qwen2.5-coder:latest",
+  
+  // Use o3-mini for specialized reasoning tasks
+  "think": "openai,o3-mini",
+  
+  // Long context with GPT-4.1 (handles up to 1M tokens)
+  "longContext": "openai,gpt-4.1",
+  "longContextThreshold": 60000
 }
 ```
 
